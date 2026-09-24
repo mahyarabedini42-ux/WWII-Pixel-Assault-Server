@@ -1,427 +1,3160 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>WWII Pixel Assault</title>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"
+>
+
+<title>WWII Pixel Assault Online</title>
+
 <style>
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Tahoma,Arial}
-body{display:flex;align-items:center;justify-content:center}
-canvas{width:min(100vw,177.78vh);height:min(56.25vw,100vh);image-rendering:pixelated;background:#6aa0b2;touch-action:none}
-#touch{display:none;position:fixed;left:0;right:0;bottom:8px;height:130px;pointer-events:none}
-.t{position:absolute;width:58px;height:58px;border:2px solid #fff6;border-radius:12px;background:#111b;color:#fff;font:bold 24px Tahoma;display:flex;align-items:center;justify-content:center;pointer-events:auto}
-@media(max-width:800px){#touch{display:block}}
-#L{left:12px;bottom:10px}#R{left:78px;bottom:10px}#J{left:144px;bottom:10px}
-#F{right:12px;bottom:60px}#REL{right:78px;bottom:60px}#G{right:144px;bottom:60px}#P{right:12px;bottom:0}
-#onlinePanel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78);z-index:20}
-#onlineBox{width:min(92vw,520px);padding:28px;background:#1d241d;border:3px solid #69785d;box-shadow:0 0 35px #000;text-align:center;color:#fff}
-#onlineBox h2{margin:0 0 14px;font-size:30px;color:#ead8ad}#nameInput{width:90%;padding:14px;font-size:20px;text-align:center;border:2px solid #69785d;background:#101510;color:#fff}#joinBtn{margin-top:14px;padding:13px 30px;font-size:19px;font-weight:bold;background:#59674f;color:#fff;border:0;cursor:pointer}#onlineStatus{margin-top:12px;color:#ddd;min-height:24px}#roomStep button,#lobbyStep button{margin-top:10px;padding:12px 24px;font-size:18px;font-weight:bold;background:#59674f;color:#fff;border:0;cursor:pointer}#leaveRoomBtn{background:#68443d!important}#roomInput{width:90%;padding:14px;font-size:22px;text-align:center;letter-spacing:5px;border:2px solid #69785d;background:#101510;color:#fff}
-#onlineInfo{position:fixed;top:8px;right:10px;z-index:8;color:#fff;background:#111b;padding:6px 10px;border:1px solid #ffffff33;font:14px Tahoma;display:none}
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#090b08;
+    color:#eee;
+    font-family:Tahoma,Arial,sans-serif;
+}
+
+body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+button,
+input{
+    font-family:inherit;
+}
+
+button{
+    border:1px solid #79845e;
+    background:#39452d;
+    color:#fff;
+    padding:12px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#4c5c3a;
+}
+
+button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+input{
+    width:100%;
+    padding:13px;
+    background:#11150f;
+    border:1px solid #596449;
+    border-radius:8px;
+    color:white;
+    font-size:18px;
+    outline:none;
+}
+
+input:focus{
+    border-color:#a7bb79;
+}
+
+#gameWrap{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+    background:#12140f;
+}
+
+canvas{
+    display:block;
+    width:100%;
+    height:100%;
+    image-rendering:auto;
+}
+
+/* =========================
+   ONLINE PANEL
+========================= */
+
+#onlinePanel{
+    position:absolute;
+    inset:0;
+    z-index:50;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(54,65,42,.85),
+            rgba(4,6,4,.97)
+        );
+}
+
+.panelBox{
+    width:min(440px,92vw);
+    padding:28px;
+    border:1px solid #68744e;
+    border-radius:16px;
+    background:rgba(16,21,14,.96);
+    box-shadow:0 20px 80px #000;
+    text-align:center;
+}
+
+.title{
+    font-size:32px;
+    font-weight:bold;
+    color:#e9d99c;
+    margin-bottom:8px;
+}
+
+.subtitle{
+    color:#aeb8a0;
+    margin-bottom:24px;
+}
+
+.step{
+    display:none;
+}
+
+.step.active{
+    display:block;
+}
+
+.field{
+    margin:12px 0;
+}
+
+.field label{
+    display:block;
+    text-align:right;
+    margin-bottom:6px;
+    color:#bfc9af;
+}
+
+.actionRow{
+    display:flex;
+    gap:10px;
+    margin-top:12px;
+}
+
+.actionRow button{
+    flex:1;
+}
+
+.status{
+    min-height:28px;
+    margin-top:14px;
+    color:#e6c978;
+    line-height:1.6;
+}
+
+.roomCode{
+    font-size:44px;
+    letter-spacing:8px;
+    color:#ffe19b;
+    margin:12px 0 20px;
+    direction:ltr;
+}
+
+.playersBox{
+    text-align:right;
+    background:#0b0e09;
+    border:1px solid #3d4732;
+    border-radius:10px;
+    padding:14px;
+    margin:14px 0;
+    line-height:2;
+}
+
+.waiting{
+    color:#aab59b;
+    font-size:14px;
+    margin:10px 0;
+}
+
+#startGameBtn{
+    width:100%;
+    margin-top:8px;
+    background:#687c43;
+    border-color:#9bae6c;
+    font-size:19px;
+}
+
+#leaveRoomBtn{
+    width:100%;
+    margin-top:10px;
+    background:#3d2925;
+    border-color:#765047;
+}
+
+#onlineInfo{
+    position:absolute;
+    top:12px;
+    right:12px;
+    z-index:15;
+    display:none;
+    background:rgba(5,7,5,.8);
+    border:1px solid #657052;
+    border-radius:8px;
+    padding:7px 12px;
+    color:#d5dfc3;
+    font-size:13px;
+}
+
+/* =========================
+   GAME HUD
+========================= */
+
+#hud{
+    position:absolute;
+    left:12px;
+    top:12px;
+    z-index:10;
+    pointer-events:none;
+    direction:ltr;
+}
+
+.hudBox{
+    background:rgba(8,10,7,.75);
+    border:1px solid #566047;
+    border-radius:8px;
+    padding:8px 12px;
+    margin-bottom:6px;
+    font-size:14px;
+}
+
+.hpBar{
+    width:170px;
+    height:12px;
+    background:#261713;
+    border:1px solid #68453c;
+    border-radius:5px;
+    overflow:hidden;
+}
+
+#hpFill{
+    width:100%;
+    height:100%;
+    background:#76934e;
+}
+
+#gameMessage{
+    position:absolute;
+    left:50%;
+    top:13%;
+    transform:translateX(-50%);
+    z-index:12;
+    color:#ffe49a;
+    font-size:28px;
+    font-weight:bold;
+    text-shadow:0 3px 8px #000;
+    pointer-events:none;
+    opacity:0;
+    transition:opacity .2s;
+}
+
+/* =========================
+   MOBILE CONTROLS
+========================= */
+
+#mobileControls{
+    position:absolute;
+    inset:0;
+    z-index:20;
+    pointer-events:none;
+    display:none;
+}
+
+.mobileBtn{
+    position:absolute;
+    pointer-events:auto;
+    width:62px;
+    height:62px;
+    border-radius:50%;
+    background:rgba(35,45,28,.72);
+    border:1px solid #7b8b5e;
+    color:#fff;
+    font-size:22px;
+    user-select:none;
+}
+
+#btnLeft{
+    left:22px;
+    bottom:35px;
+}
+
+#btnRight{
+    left:95px;
+    bottom:35px;
+}
+
+#btnJump{
+    right:100px;
+    bottom:105px;
+}
+
+#btnShoot{
+    right:22px;
+    bottom:35px;
+}
+
+#btnReload{
+    right:100px;
+    bottom:35px;
+}
+
+#btnGrenade{
+    right:175px;
+    bottom:35px;
+}
+
+/* =========================
+   MENU
+========================= */
+
+#gameMenu{
+    position:absolute;
+    inset:0;
+    z-index:30;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(4,6,4,.72);
+}
+
+.menuBox{
+    width:min(380px,90vw);
+    background:#121710;
+    border:1px solid #667351;
+    border-radius:14px;
+    padding:25px;
+    text-align:center;
+}
+
+.menuBox h2{
+    color:#e8d595;
+    margin-top:0;
+}
+
+.menuBox button{
+    display:block;
+    width:100%;
+    margin:9px 0;
+}
+
+/* =========================
+   LANDSCAPE PHONE
+========================= */
+
+@media(max-width:800px){
+
+    .title{
+        font-size:26px;
+    }
+
+    .panelBox{
+        padding:20px;
+    }
+
+    #mobileControls{
+        display:block;
+    }
+
+    #hud{
+        transform:scale(.9);
+        transform-origin:top left;
+    }
+
+    .roomCode{
+        font-size:34px;
+    }
+}
+
 </style>
+
 </head>
+
 <body>
-<canvas id="game" width="1280" height="720"></canvas>
+
+<div id="gameWrap">
+
+<canvas id="game"></canvas>
+
 <div id="onlineInfo"></div>
-<div id="onlinePanel"><div id="onlineBox"><h2>WWII PIXEL ASSAULT — آنلاین</h2>
-<div id="nameStep"><div>اول یک نام منحصر‌به‌فرد انتخاب کن.</div><br><input id="nameInput" maxlength="16" autocomplete="off" placeholder="نام بازیکن"><br><button id="joinBtn">ورود به سرور</button></div>
-<div id="roomStep" style="display:none"><div id="roomWelcome" style="color:#ead8ad;font-size:20px;margin-bottom:15px"></div><button id="createRoomBtn">ساخت اتاق جدید</button><div style="margin:14px 0;color:#aaa">یا</div><input id="roomInput" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="رمز ۶ رقمی اتاق"><br><button id="joinRoomBtn">ورود به اتاق</button></div>
-<div id="lobbyStep" style="display:none"><div style="font-size:18px">کد اتاق شما:</div><div id="roomCode" style="font-size:42px;letter-spacing:8px;color:#ffe19b;margin:10px"></div><div id="roomPlayers" style="margin:12px 0;line-height:1.9"></div><div id="hostHint" style="color:#aaa;font-size:14px"></div><button id="leaveRoomBtn">خروج از اتاق</button></div>
-<div id="onlineStatus">در حال آماده‌سازی...</div></div></div>
-<div id="touch">
-<div class="t" id="L">◀</div><div class="t" id="R">▶</div><div class="t" id="J">▲</div>
-<div class="t" id="F">🔫</div><div class="t" id="REL">R</div><div class="t" id="G">💣</div><div class="t" id="P">E</div>
+
+<div id="hud">
+
+    <div class="hudBox">
+        ❤️ <span id="hpText">100</span>
+        <div class="hpBar">
+            <div id="hpFill"></div>
+        </div>
+    </div>
+
+    <div class="hudBox">
+        Stage: <span id="stageText">1</span>
+    </div>
+
+    <div class="hudBox">
+        Weapon: <span id="weaponText">Rifle</span>
+    </div>
+
+    <div class="hudBox">
+        Enemies: <span id="enemyText">0</span>
+    </div>
+
 </div>
+
+<div id="gameMessage"></div>
+
+<!-- =========================
+     ONLINE LOGIN / LOBBY
+========================= -->
+
+<div id="onlinePanel">
+
+    <div class="panelBox">
+
+        <div class="title">
+            WWII PIXEL ASSAULT
+        </div>
+
+        <div class="subtitle">
+            Multiplayer Online
+        </div>
+
+        <!-- NAME -->
+
+        <div id="nameStep" class="step active">
+
+            <div class="field">
+                <label>نام بازیکن</label>
+                <input
+                    id="nameInput"
+                    maxlength="16"
+                    placeholder="مثلاً Mahyar"
+                    autocomplete="off"
+                >
+            </div>
+
+            <button
+                id="connectBtn"
+                style="width:100%;margin-top:8px"
+            >
+                ورود به سرور
+            </button>
+
+            <div id="onlineStatus" class="status"></div>
+
+        </div>
+
+        <!-- ROOM -->
+
+        <div id="roomStep" class="step">
+
+            <div id="roomWelcome" class="subtitle"></div>
+
+            <button
+                id="createRoomBtn"
+                style="width:100%;margin-bottom:10px"
+            >
+                ساخت اتاق جدید
+            </button>
+
+            <div style="color:#888;margin:12px">
+                یا
+            </div>
+
+            <div class="field">
+                <label>کد ۶ رقمی اتاق</label>
+
+                <input
+                    id="roomInput"
+                    maxlength="6"
+                    inputmode="numeric"
+                    placeholder="123456"
+                    autocomplete="off"
+                >
+            </div>
+
+            <button
+                id="joinRoomBtn"
+                style="width:100%"
+            >
+                ورود به اتاق
+            </button>
+
+        </div>
+
+        <!-- LOBBY -->
+
+        <div id="lobbyStep" class="step">
+
+            <div>
+                کد اتاق:
+            </div>
+
+            <div
+                id="roomCode"
+                class="roomCode"
+            ></div>
+
+            <div
+                id="roomPlayers"
+                class="playersBox"
+            ></div>
+
+            <div
+                id="hostHint"
+                class="waiting"
+            ></div>
+
+            <button id="startGameBtn">
+                شروع بازی
+            </button>
+
+            <button id="leaveRoomBtn">
+                خروج از اتاق
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     GAME MENU
+========================= -->
+
+<div id="gameMenu">
+
+    <div class="menuBox">
+
+        <h2>منوی بازی</h2>
+
+        <button id="resumeBtn">
+            ادامه بازی
+        </button>
+
+        <button id="lobbyBtn">
+            بازگشت به اتاق
+        </button>
+
+    </div>
+
+</div>
+
+<!-- =========================
+     MOBILE CONTROLS
+========================= -->
+
+<div id="mobileControls">
+
+    <button class="mobileBtn" id="btnLeft">◀</button>
+    <button class="mobileBtn" id="btnRight">▶</button>
+    <button class="mobileBtn" id="btnJump">▲</button>
+    <button class="mobileBtn" id="btnShoot">●</button>
+    <button class="mobileBtn" id="btnReload">R</button>
+    <button class="mobileBtn" id="btnGrenade">G</button>
+
+</div>
+
+</div>
+
 <script>
-const c=document.getElementById("game"),ctx=c.getContext("2d");ctx.imageSmoothingEnabled=false;
-const W=1280,H=720,keys={};let screen="menu",stage=1,cam=0,last=0,buttons=[],player,enemies=[],shots=[],grenades=[],drops=[],fx=[],obstacles=[],medkits=[],battlefield=[],smoke=[],msg="",msgT=0;
-// online state is declared in the online-room section below
-const SD=[
-{name:"ساحل نورماندی",len:6200,n:18,hp:45,sky:"#69a7bb"},
-{name:"روستای متروکه",len:7300,n:26,hp:58,sky:"#84949a"},
-{name:"جنگل فرانسه",len:8500,n:35,hp:70,sky:"#66876c"},
-{name:"خط مقدم آلمان",len:10100,n:46,hp:84,sky:"#727570"},
-{name:"قلعه نهایی",len:12200,n:60,hp:102,sky:"#555f65"}];
-const G={
-pistol:{name:"M1911",d:20,rate:290,mag:7,reload:850,speed:15,p:1,s:.015},
-smg:{name:"Thompson",d:13,rate:105,mag:30,reload:1100,speed:15,p:1,s:.045},
-rifle:{name:"M1 Garand",d:34,rate:470,mag:8,reload:1050,speed:17,p:1,s:.01},
-mg:{name:"Browning M1919",d:10,rate:75,mag:50,reload:1500,speed:15,p:1,s:.07},
-shotgun:{name:"Combat Shotgun",d:11,rate:640,mag:5,reload:1250,speed:13,p:7,s:.20}};
-const R=(a,b)=>Math.random()*(b-a)+a;
-const T=w=>566+Math.sin(w*.004)*10+Math.sin(w*.014)*7;
-function box(a,b,w,h,col){ctx.fillStyle=col;ctx.fillRect(a|0,b|0,w|0,h|0)}
-function text(s,a,b,z=20,col="#fff",al="center"){ctx.fillStyle=col;ctx.font="bold "+z+"px Tahoma";ctx.textAlign=al;ctx.fillText(s,a,b)}
-function say(s,t=1200){msg=s;msgT=t}
-function button(a,b,w,h,label,id){buttons.push({a,b,w,h,id});box(a,b,w,h,"#202821");box(a+4,b+4,w-8,h-8,"#59674f");text(label,a+w/2,b+h/2+8,24)}
-function startGame(n){
-stage=n;screen="game";cam=0;shots=[];grenades=[];drops=[];fx=[];smoke=[];obstacles=[];medkits=[];battlefield=[];
-const d=SD[n-1];
-player={x:120,y:T(120)-62,w:34,h:62,vx:0,vy:0,dir:1,hp:100,max:100,ground:false,crouch:false,gun:"pistol",ammo:7,reload:0,last:0,grenades:4,kills:0,anim:0};
 
-const obstacleCount=10+n*3;
-for(let i=0;i<obstacleCount;i++){
-  let ox=700+i*(d.len-1050)/obstacleCount+R(-90,90),type=i%4;
-  let ow=type===3?120:R(55,95),oh=type===1?42:type===3?48:55;
-  obstacles.push({x:ox,y:T(ox)-oh,w:ow,h:oh,type});
+/* =========================================================
+   CANVAS
+========================================================= */
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let W = 1280;
+let H = 720;
+
+function resizeCanvas(){
+
+    const dpr = Math.min(
+        window.devicePixelRatio || 1,
+        2
+    );
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    ctx.setTransform(dpr,0,0,dpr,0,0);
 }
-for(let i=0;i<Math.floor(d.len/520);i++){
-  let x=350+i*520+R(-110,120);
-  battlefield.push({x,type:i%7});
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+
+/* =========================================================
+   ONLINE
+========================================================= */
+
+const SERVER_URL =
+    location.protocol === "https:"
+        ? "wss://" + location.host
+        : "ws://" + location.host;
+
+const onlinePanel =
+    document.getElementById("onlinePanel");
+
+const nameStep =
+    document.getElementById("nameStep");
+
+const roomStep =
+    document.getElementById("roomStep");
+
+const lobbyStep =
+    document.getElementById("lobbyStep");
+
+const nameInput =
+    document.getElementById("nameInput");
+
+const connectBtn =
+    document.getElementById("connectBtn");
+
+const onlineStatus =
+    document.getElementById("onlineStatus");
+
+const roomWelcome =
+    document.getElementById("roomWelcome");
+
+const createRoomBtn =
+    document.getElementById("createRoomBtn");
+
+const roomInput =
+    document.getElementById("roomInput");
+
+const joinRoomBtn =
+    document.getElementById("joinRoomBtn");
+
+const roomCodeEl =
+    document.getElementById("roomCode");
+
+const roomPlayersEl =
+    document.getElementById("roomPlayers");
+
+const hostHint =
+    document.getElementById("hostHint");
+
+const startGameBtn =
+    document.getElementById("startGameBtn");
+
+const leaveRoomBtn =
+    document.getElementById("leaveRoomBtn");
+
+const onlineInfo =
+    document.getElementById("onlineInfo");
+
+let ws = null;
+
+let online = false;
+
+let myId = "";
+
+let myName = "";
+
+let roomCode = "";
+
+let isHost = false;
+
+let remotePlayers = {};
+
+let remoteShots = [];
+
+
+/* =========================================================
+   ONLINE HELPERS
+========================================================= */
+
+function status(text){
+
+    onlineStatus.textContent = text || "";
 }
-for(let i=0;i<Math.floor(d.len/900);i++){
-  let x=900+i*900+R(-180,180);
-  smoke.push({x,y:T(x)-70,r:R(14,28),t:R(0,800)});
-}
-const medkitCount=3;
-for(let i=0;i<medkitCount;i++){
-  let mx=1100+i*(d.len-1700)/(medkitCount-1)+R(-100,100);
-  medkits.push({x:mx,y:T(mx)-28,w:42,h:28,used:false});
-}
-enemies=[];
-for(let i=0;i<d.n;i++){
-  let w=520+i*(d.len-950)/d.n+R(-55,90);
-  let type=n>=3&&i%8==0?"elite":n>=2&&i%5==0?"mg":"rifle",hp=d.hp+(type=="elite"?45:0);
-  let ey=T(w)-58,test={x:w,y:ey,w:32,h:58};
-  for(const o of obstacles){if(rectsOverlap(test,o)){w=o.x+o.w+55;ey=T(w)-58;test={x:w,y:ey,w:32,h:58};}}
-  enemies.push({x:w,y:ey,w:32,h:58,hp,max:hp,type,dir:-1,cool:R(850,1800),alive:true,anim:R(0,6)});
-}
-say("مرحله "+n+" — "+d.name,1800)
-}
-function shoot(){if(screen!="game"||player.reload>0)return;let g=G[player.gun],now=performance.now();if(now-player.last<g.rate)return;if(player.ammo<=0){say("خشاب خالی — R",800);return}player.last=now;player.ammo--;for(let i=0;i<g.p;i++){let sp=(Math.random()-.5)*g.s;const ns={x:player.x+player.dir*28,y:player.y+24,vx:Math.cos(sp)*g.speed*player.dir,vy:Math.sin(sp)*g.speed,d:g.d,enemy:false};shots.push(ns);netShot(ns)}}
-function reload(){if(screen=="game"&&player.reload<=0&&player.ammo<G[player.gun].mag)player.reload=G[player.gun].reload}
-function grenade(){if(screen!="game"||player.grenades<=0)return;player.grenades--;grenades.push({x:player.x+player.dir*20,y:player.y+20,vx:player.dir*8,vy:-9,t:1350})}
-function healPlayer(){
-  for(const m of medkits){
-    if(m.used) continue;
-    if(Math.abs(m.x-player.x)<65){
-      if(player.hp>=player.max){say("جان کامل است",700);return}
-      const before=player.hp;
-      player.hp=Math.min(player.max,player.hp+player.max*0.5);
-      m.used=true;
-      say("جعبه پزشکی: +"+Math.ceil(player.hp-before)+" HP",1000);
-      return;
+
+function sendNet(data){
+
+    if (
+        ws &&
+        ws.readyState === WebSocket.OPEN
+    ){
+        ws.send(JSON.stringify(data));
     }
-  }
-  say("به جعبه پزشکی نزدیک شوید",700);
 }
-function pickup(){let b=null,bd=75;for(const d of drops){let q=Math.abs(d.x-player.x);if(q<bd){b=d;bd=q}}if(b){player.gun=b.gun;player.ammo=G[b.gun].mag;drops=drops.filter(v=>v!==b);say(G[b.gun].name+" برداشته شد",1000)}}
-function fxadd(w,y,col="#e8a33a",n=8){for(let i=0;i<n;i++)fx.push({x:w,y,vx:R(-2,2),vy:R(-3,1),t:R(150,400),col})}
-function hurt(e,d){e.hp-=d;fxadd(e.x,e.y+20,"#d8c59b",4);if(e.hp<=0){e.alive=false;let ei=enemies.indexOf(e);if(online&&ei>=0)sendNet({type:"kill",index:ei,stage});player.kills++;fxadd(e.x,e.y+25,"#b53c2d",9);if(Math.random()<.72)drops.push({x:e.x,y:T(e.x)-15,gun:["smg","rifle","mg","shotgun"][Math.floor(Math.random()*4)]})}}
-function rectsOverlap(a,b){
-return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
-function blocked(nx,ny,w,h){
-return obstacles.some(o=>rectsOverlap({x:nx,y:ny,w,h},o))}
-function bulletBlocked(s){
-return obstacles.some(o=>s.x>=o.x&&s.x<=o.x+o.w&&s.y>=o.y&&s.y<=o.y+o.h)}
-function moveX(dx){
-if(!dx)return;
-if(!blocked(player.x+dx,player.y,player.w,player.h))player.x+=dx;
+
+function updateOnlineInfo(){
+
+    if (!online || !roomCode){
+
+        onlineInfo.style.display = "none";
+        return;
+    }
+
+    onlineInfo.style.display = "block";
+
+    const players =
+        Object.values(remotePlayers);
+
+    const names =
+        players.map(p => p.name);
+
+    if (
+        myName &&
+        !names.includes(myName)
+    ){
+        names.unshift(myName);
+    }
+
+    onlineInfo.textContent =
+        "اتاق " +
+        roomCode +
+        " • " +
+        names.length +
+        "/4 • " +
+        names.join(" • ");
 }
+
+
+/* =========================================================
+   SHOW STEPS
+========================================================= */
+
+function showNameStep(){
+
+    nameStep.style.display = "block";
+    roomStep.style.display = "none";
+    lobbyStep.style.display = "none";
+}
+
+function showRoomStep(){
+
+    nameStep.style.display = "none";
+    roomStep.style.display = "block";
+    lobbyStep.style.display = "none";
+
+    roomWelcome.textContent =
+        "سلام " +
+        myName +
+        "! یک اتاق بساز یا با کد ۶ رقمی وارد شو.";
+
+    status("");
+}
+
+function showLobby(code, host){
+
+    roomCode = code;
+    isHost = !!host;
+
+    nameStep.style.display = "none";
+    roomStep.style.display = "none";
+    lobbyStep.style.display = "block";
+
+    roomCodeEl.textContent = code;
+
+    startGameBtn.style.display =
+        isHost ? "block" : "none";
+
+    startGameBtn.disabled = false;
+    startGameBtn.textContent = "شروع بازی";
+
+    hostHint.textContent =
+        isHost
+            ? "شما میزبان هستید. وقتی بازیکنان آماده‌اند، روی «شروع بازی» بزنید."
+            : "منتظر شروع بازی توسط میزبان باشید.";
+
+    status("اتاق آماده است.");
+}
+
+
+/* =========================================================
+   UPDATE LOBBY
+========================================================= */
+
+function updateLobby(players){
+
+    const arr =
+        Object.values(players || {});
+
+    roomPlayersEl.innerHTML =
+        arr.map(p => {
+
+            let text = "👤 " + p.name;
+
+            if (p.id === myId){
+                text += " (شما)";
+            }
+
+            if (p.host){
+                text += " ⭐ میزبان";
+            }
+
+            return text;
+
+        }).join("<br>");
+
+    if (!arr.length){
+        roomPlayersEl.innerHTML =
+            "هنوز بازیکنی وارد نشده است.";
+    }
+
+    updateOnlineInfo();
+}
+
+
+/* =========================================================
+   CONNECT
+========================================================= */
+
+function connectOnline(){
+
+    myName =
+        nameInput.value
+            .trim()
+            .slice(0,16);
+
+    if (myName.length < 2){
+
+        status(
+            "نام باید حداقل ۲ حرف باشد."
+        );
+
+        return;
+    }
+
+    if (
+        location.protocol === "file:"
+    ){
+
+        status(
+            "بازی باید از طریق سرور اجرا شود."
+        );
+
+        return;
+    }
+
+    status("در حال اتصال...");
+
+    connectBtn.disabled = true;
+
+    ws = new WebSocket(SERVER_URL);
+
+    ws.onopen = () => {
+
+        sendNet({
+            type:"hello",
+            name:myName
+        });
+
+    };
+
+    ws.onmessage = event => {
+
+        let m;
+
+        try{
+            m = JSON.parse(event.data);
+        }
+        catch{
+            return;
+        }
+
+        /* =========================
+           CONNECTED
+        ========================= */
+
+        if (m.type === "connected"){
+
+            return;
+        }
+
+        /* =========================
+           WELCOME
+        ========================= */
+
+        if (m.type === "welcome"){
+
+            myId = m.id;
+
+            online = true;
+
+            onlinePanel.style.display =
+                "flex";
+
+            showRoomStep();
+
+            return;
+        }
+
+        /* =========================
+           ROOM CREATED
+        ========================= */
+
+        if (m.type === "room_created"){
+
+            remotePlayers =
+                m.players || {};
+
+            showLobby(
+                m.code,
+                true
+            );
+
+            updateLobby(
+                remotePlayers
+            );
+
+            return;
+        }
+
+        /* =========================
+           ROOM JOINED
+        ========================= */
+
+        if (m.type === "room_joined"){
+
+            remotePlayers =
+                m.players || {};
+
+            showLobby(
+                m.code,
+                !!m.host
+            );
+
+            updateLobby(
+                remotePlayers
+            );
+
+            return;
+        }
+
+        /* =========================
+           ROOM UPDATE
+        ========================= */
+
+        if (m.type === "room"){
+
+            remotePlayers =
+                m.players || {};
+
+            isHost =
+                m.host === myId;
+
+            roomCode =
+                m.code;
+
+            if (m.started){
+
+                onlinePanel.style.display =
+                    "none";
+
+            }else{
+
+                onlinePanel.style.display =
+                    "flex";
+
+                showLobby(
+                    m.code,
+                    isHost
+                );
+
+                updateLobby(
+                    remotePlayers
+                );
+            }
+
+            return;
+        }
+
+        /* =========================
+           START GAME
+        ========================= */
+
+        if (m.type === "start_game"){
+
+            const gameStage =
+                Math.max(
+                    1,
+                    Math.min(
+                        5,
+                        Number(m.stage) || 1
+                    )
+                );
+
+            onlinePanel.style.display =
+                "none";
+
+            startGame(gameStage);
+
+            return;
+        }
+
+        /* =========================
+           STATE
+        ========================= */
+
+        if (m.type === "state"){
+
+            if (m.id !== myId){
+
+                remotePlayers[m.id] =
+                    m.player;
+
+            }
+
+            return;
+        }
+
+        /* =========================
+           SHOT
+        ========================= */
+
+        if (
+            m.type === "shot" &&
+            m.id !== myId
+        ){
+
+            remoteShots.push({
+                ...m.shot,
+                ttl:700
+            });
+
+            return;
+        }
+
+        /* =========================
+           KILL
+        ========================= */
+
+        if (m.type === "kill"){
+
+            const e =
+                enemies[m.index];
+
+            if (e){
+                e.alive = false;
+            }
+
+            return;
+        }
+
+        /* =========================
+           STAGE
+        ========================= */
+
+        if (m.type === "stage"){
+
+            if (
+                screen !== "game" ||
+                stage !== m.stage
+            ){
+
+                startGame(
+                    Math.max(
+                        1,
+                        Math.min(
+                            5,
+                            Number(m.stage) || 1
+                        )
+                    )
+                );
+            }
+
+            return;
+        }
+
+        /* =========================
+           ERROR
+        ========================= */
+
+        if (m.type === "error"){
+
+            status(m.message);
+
+            connectBtn.disabled = false;
+
+            return;
+        }
+
+        /* =========================
+           LEFT ROOM
+        ========================= */
+
+        if (m.type === "left_room"){
+
+            roomCode = "";
+            isHost = false;
+
+            showRoomStep();
+
+            return;
+        }
+
+    };
+
+    ws.onclose = () => {
+
+        online = false;
+
+        roomCode = "";
+
+        isHost = false;
+
+        remotePlayers = {};
+
+        connectBtn.disabled = false;
+
+        onlinePanel.style.display =
+            "flex";
+
+        showNameStep();
+
+        status(
+            "اتصال قطع شد. دوباره وارد شو."
+        );
+
+        updateOnlineInfo();
+    };
+
+    ws.onerror = () => {
+
+        status(
+            "اتصال به سرور برقرار نشد."
+        );
+
+    };
+}
+
+connectBtn.onclick =
+    connectOnline;
+
+nameInput.addEventListener(
+    "keydown",
+    e => {
+
+        if (e.key === "Enter"){
+            connectOnline();
+        }
+
+    }
+);
+
+
+/* =========================================================
+   ROOM BUTTONS
+========================================================= */
+
+createRoomBtn.onclick = () => {
+
+    sendNet({
+        type:"create_room"
+    });
+
+};
+
+joinRoomBtn.onclick = () => {
+
+    const code =
+        roomInput.value
+            .replace(/\D/g,"")
+            .slice(0,6);
+
+    if (code.length !== 6){
+
+        status(
+            "رمز اتاق باید دقیقاً ۶ رقم باشد."
+        );
+
+        return;
+    }
+
+    sendNet({
+        type:"join_room",
+        code
+    });
+
+};
+
+roomInput.addEventListener(
+    "keydown",
+    e => {
+
+        if (e.key === "Enter"){
+            joinRoomBtn.click();
+        }
+
+    }
+);
+
+
+/* =========================================================
+   START BUTTON
+========================================================= */
+
+startGameBtn.onclick = () => {
+
+    if (!isHost) return;
+
+    startGameBtn.disabled = true;
+
+    startGameBtn.textContent =
+        "در حال شروع...";
+
+    sendNet({
+        type:"start_game",
+        stage:1
+    });
+};
+
+
+/* =========================================================
+   LEAVE ROOM
+========================================================= */
+
+leaveRoomBtn.onclick = () => {
+
+    sendNet({
+        type:"leave_room"
+    });
+
+    roomCode = "";
+
+    isHost = false;
+
+    remotePlayers = {};
+
+    showRoomStep();
+
+    status(
+        "از اتاق خارج شدی."
+    );
+
+    updateOnlineInfo();
+};
+
+
+/* =========================================================
+   GAME STATE
+========================================================= */
+
+let screen = "game";
+
+let stage = 1;
+
+let cameraX = 0;
+
+let worldWidth = 6000;
+
+let gameRunning = false;
+
+let gameOver = false;
+
+let lastTime = 0;
+
+let netTimer = 0;
+
+let messageTimer = 0;
+
+
+/* =========================================================
+   PLAYER
+========================================================= */
+
+const player = {
+
+    x:120,
+    y:420,
+
+    w:42,
+    h:72,
+
+    vx:0,
+    vy:0,
+
+    speed:260,
+
+    jump:600,
+
+    dir:1,
+
+    hp:100,
+
+    gun:"Rifle",
+
+    ammo:30,
+
+    maxAmmo:30,
+
+    reload:false,
+
+    reloadTimer:0,
+
+    grounded:false,
+
+    shootCooldown:0,
+
+    grenadeCooldown:0,
+
+    invincible:0
+};
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+const keys = {};
+
+window.addEventListener(
+    "keydown",
+    e => {
+
+        keys[e.key.toLowerCase()] = true;
+
+        if (
+            [
+                " ",
+                "arrowleft",
+                "arrowright",
+                "arrowup",
+                "arrowdown"
+            ].includes(e.key.toLowerCase())
+        ){
+            e.preventDefault();
+        }
+
+        if (e.key.toLowerCase() === "r"){
+            reload();
+        }
+
+        if (e.key.toLowerCase() === "q"){
+            grenade();
+        }
+
+        if (e.key === "Escape"){
+            toggleMenu();
+        }
+
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    e => {
+        keys[e.key.toLowerCase()] = false;
+    }
+);
+
+
+/* =========================================================
+   TOUCH CONTROLS
+========================================================= */
+
+function bindMobile(id, key){
+
+    const el =
+        document.getElementById(id);
+
+    const down = e => {
+
+        e.preventDefault();
+
+        keys[key] = true;
+    };
+
+    const up = e => {
+
+        e.preventDefault();
+
+        keys[key] = false;
+    };
+
+    el.addEventListener(
+        "pointerdown",
+        down
+    );
+
+    el.addEventListener(
+        "pointerup",
+        up
+    );
+
+    el.addEventListener(
+        "pointercancel",
+        up
+    );
+
+    el.addEventListener(
+        "pointerleave",
+        up
+    );
+}
+
+bindMobile("btnLeft","a");
+bindMobile("btnRight","d");
+bindMobile("btnJump","w");
+bindMobile("btnShoot"," ");
+bindMobile("btnReload","r");
+bindMobile("btnGrenade","q");
+
+
+/* =========================================================
+   WORLD
+========================================================= */
+
+const solids = [];
+
+function createWorld(){
+
+    solids.length = 0;
+
+    solids.push({
+        x:0,
+        y:560,
+        w:worldWidth,
+        h:200
+    });
+
+    for(
+        let x=450;
+        x<worldWidth-400;
+        x+=520
+    ){
+
+        if (Math.random() > .35){
+
+            solids.push({
+                x,
+                y:500,
+                w:110,
+                h:60
+            });
+
+        }
+    }
+
+    solids.push({
+        x:1100,
+        y:430,
+        w:120,
+        h:130
+    });
+
+    solids.push({
+        x:2400,
+        y:450,
+        w:150,
+        h:110
+    });
+
+    solids.push({
+        x:3800,
+        y:420,
+        w:180,
+        h:140
+    });
+}
+
+
+/* =========================================================
+   ENEMIES
+========================================================= */
+
+let enemies = [];
+
+function createEnemies(){
+
+    enemies = [];
+
+    const count =
+        8 + stage * 4;
+
+    for(
+        let i=0;
+        i<count;
+        i++
+    ){
+
+        const x =
+            650 +
+            i *
+            ((worldWidth-1200) / count);
+
+        enemies.push({
+
+            x:x + Math.random()*120,
+
+            y:488,
+
+            w:42,
+
+            h:72,
+
+            vx:0,
+
+            hp:
+                40 +
+                stage * 15,
+
+            maxHp:
+                40 +
+                stage * 15,
+
+            alive:true,
+
+            dir:-1,
+
+            cooldown:
+                1 +
+                Math.random()*2,
+
+            type:
+                i % 3
+
+        });
+    }
+}
+
+
+/* =========================================================
+   BULLETS
+========================================================= */
+
+let bullets = [];
+
+let grenades = [];
+
+
+/* =========================================================
+   COLLISION
+========================================================= */
+
+function overlap(a,b){
+
+    return (
+        a.x < b.x+b.w &&
+        a.x+a.w > b.x &&
+        a.y < b.y+b.h &&
+        a.y+a.h > b.y
+    );
+}
+
+
+function moveAndCollide(ent,dt){
+
+    ent.x += ent.vx * dt;
+
+    for(const o of solids){
+
+        if(overlap(ent,o)){
+
+            if(ent.vx > 0){
+
+                ent.x =
+                    o.x - ent.w;
+
+            }else if(ent.vx < 0){
+
+                ent.x =
+                    o.x + o.w;
+            }
+
+            ent.vx = 0;
+        }
+    }
+
+    ent.y += ent.vy * dt;
+
+    ent.grounded = false;
+
+    for(const o of solids){
+
+        if(overlap(ent,o)){
+
+            if(ent.vy > 0){
+
+                ent.y =
+                    o.y - ent.h;
+
+                ent.grounded = true;
+
+            }else if(ent.vy < 0){
+
+                ent.y =
+                    o.y + o.h;
+            }
+
+            ent.vy = 0;
+        }
+    }
+}
+
+
+/* =========================================================
+   START GAME
+========================================================= */
+
+function startGame(n=1){
+
+    stage =
+        Math.max(
+            1,
+            Math.min(5,Number(n)||1)
+        );
+
+    screen = "game";
+
+    gameRunning = true;
+
+    gameOver = false;
+
+    cameraX = 0;
+
+    player.x = 120;
+    player.y = 400;
+
+    player.vx = 0;
+    player.vy = 0;
+
+    player.hp = 100;
+
+    player.ammo =
+        player.maxAmmo;
+
+    player.reload = false;
+
+    player.invincible = 1;
+
+    bullets = [];
+
+    grenades = [];
+
+    createWorld();
+
+    createEnemies();
+
+    onlinePanel.style.display =
+        "none";
+
+    updateHUD();
+
+    showMessage(
+        "STAGE " + stage,
+        1500
+    );
+}
+
+
+/* =========================================================
+   RELOAD
+========================================================= */
+
+function reload(){
+
+    if (
+        player.reload ||
+        player.ammo >= player.maxAmmo
+    ){
+        return;
+    }
+
+    player.reload = true;
+
+    player.reloadTimer = 1.2;
+}
+
+
+/* =========================================================
+   SHOOT
+========================================================= */
+
+function shoot(){
+
+    if (!gameRunning) return;
+
+    if (player.reload) return;
+
+    if (player.shootCooldown > 0) return;
+
+    if (player.ammo <= 0){
+
+        reload();
+
+        return;
+    }
+
+    player.ammo--;
+
+    player.shootCooldown =
+        .16;
+
+    const bx =
+        player.dir > 0
+            ? player.x + player.w
+            : player.x - 10;
+
+    const by =
+        player.y + 28;
+
+    const speed = 800;
+
+    const bullet = {
+
+        x:bx,
+
+        y:by,
+
+        vx:
+            speed *
+            player.dir,
+
+        vy:0,
+
+        r:4,
+
+        damage:
+            20 + stage * 3,
+
+        life:1.5
+    };
+
+    bullets.push(bullet);
+
+    netShot(bullet);
+}
+
+
+/* =========================================================
+   GRENADE
+========================================================= */
+
+function grenade(){
+
+    if (
+        !gameRunning ||
+        player.grenadeCooldown > 0
+    ){
+        return;
+    }
+
+    player.grenadeCooldown =
+        1.5;
+
+    grenades.push({
+
+        x:
+            player.x +
+            player.w/2,
+
+        y:
+            player.y,
+
+        vx:
+            player.dir * 380,
+
+        vy:
+            -500,
+
+        timer:1.2
+
+    });
+}
+
+
+/* =========================================================
+   ENEMY HIT
+========================================================= */
+
+function damageEnemy(enemy,index,damage){
+
+    if (!enemy.alive) return;
+
+    enemy.hp -= damage;
+
+    if(enemy.hp <= 0){
+
+        enemy.hp = 0;
+
+        enemy.alive = false;
+
+        sendNet({
+            type:"kill",
+            index,
+            stage
+        });
+    }
+}
+
+
+/* =========================================================
+   PLAYER DAMAGE
+========================================================= */
+
+function damagePlayer(amount){
+
+    if (
+        player.invincible > 0 ||
+        gameOver
+    ){
+        return;
+    }
+
+    player.hp -= amount;
+
+    player.invincible = .5;
+
+    if(player.hp <= 0){
+
+        player.hp = 0;
+
+        gameOver = true;
+
+        showMessage(
+            "YOU ARE DOWN",
+            3000
+        );
+    }
+}
+
+
+/* =========================================================
+   UPDATE
+========================================================= */
+
 function update(dt){
-if(screen!="game")return;player.anim+=dt/90;if(player.reload>0){player.reload-=dt;if(player.reload<=0){player.reload=0;player.ammo=G[player.gun].mag}}
-player.crouch=!!keys.s;
-player.vx=(keys.d?3.7:0)-(keys.a?3.7:0);
-if(player.vx)player.dir=player.vx>0?1:-1;
-if(keys.w&&player.ground){player.vy=-10;player.ground=false}
-moveX(player.vx);
-player.vy+=.45;
-player.y+=player.vy;
-let gy=T(player.x);
-if(player.y+player.h>=gy){player.y=gy-player.h;player.vy=0;player.ground=true}else player.ground=false;
-for(const o of obstacles){
- if(rectsOverlap({x:player.x,y:player.y,w:player.w,h:player.h},o)&&player.vy>=0){
-   player.y=o.y-player.h;player.vy=0;player.ground=true;
- }
+
+    if (!gameRunning) return;
+
+    if(gameOver){
+
+        if(keys["enter"]){
+            startGame(stage);
+        }
+
+        return;
+    }
+
+    player.shootCooldown =
+        Math.max(
+            0,
+            player.shootCooldown-dt
+        );
+
+    player.grenadeCooldown =
+        Math.max(
+            0,
+            player.grenadeCooldown-dt
+        );
+
+    player.invincible =
+        Math.max(
+            0,
+            player.invincible-dt
+        );
+
+    if(player.reload){
+
+        player.reloadTimer -= dt;
+
+        if(player.reloadTimer <= 0){
+
+            player.reload = false;
+
+            player.ammo =
+                player.maxAmmo;
+        }
+    }
+
+    /* MOVEMENT */
+
+    player.vx = 0;
+
+    if(keys["a"] || keys["arrowleft"]){
+
+        player.vx =
+            -player.speed;
+
+        player.dir = -1;
+    }
+
+    if(keys["d"] || keys["arrowright"]){
+
+        player.vx =
+            player.speed;
+
+        player.dir = 1;
+    }
+
+    if(
+        (keys["w"] ||
+         keys["arrowup"]) &&
+        player.grounded
+    ){
+
+        player.vy =
+            -player.jump;
+    }
+
+    /* SHOOT */
+
+    if(keys[" "]){
+        shoot();
+    }
+
+    /* GRAVITY */
+
+    player.vy +=
+        1500 * dt;
+
+    moveAndCollide(
+        player,
+        dt
+    );
+
+    player.x =
+        Math.max(
+            0,
+            Math.min(
+                worldWidth-player.w,
+                player.x
+            )
+        );
+
+    /* BULLETS */
+
+    for(
+        let i=bullets.length-1;
+        i>=0;
+        i--
+    ){
+
+        const b = bullets[i];
+
+        b.x += b.vx * dt;
+
+        b.y += b.vy * dt;
+
+        b.life -= dt;
+
+        let remove = false;
+
+        if(
+            b.life <= 0 ||
+            b.x < 0 ||
+            b.x > worldWidth
+        ){
+            remove = true;
+        }
+
+        for(const s of solids){
+
+            if(
+                b.x > s.x &&
+                b.x < s.x+s.w &&
+                b.y > s.y &&
+                b.y < s.y+s.h
+            ){
+
+                remove = true;
+                break;
+            }
+        }
+
+        if(!remove){
+
+            for(
+                let j=0;
+                j<enemies.length;
+                j++
+            ){
+
+                const e =
+                    enemies[j];
+
+                if(!e.alive) continue;
+
+                const box = {
+                    x:b.x-3,
+                    y:b.y-3,
+                    w:6,
+                    h:6
+                };
+
+                if(
+                    overlap(box,e)
+                ){
+
+                    damageEnemy(
+                        e,
+                        j,
+                        b.damage
+                    );
+
+                    remove = true;
+
+                    break;
+                }
+            }
+        }
+
+        if(remove){
+            bullets.splice(i,1);
+        }
+    }
+
+    /* GRENADES */
+
+    for(
+        let i=grenades.length-1;
+        i>=0;
+        i--
+    ){
+
+        const g =
+            grenades[i];
+
+        g.vy +=
+            1200*dt;
+
+        g.x +=
+            g.vx*dt;
+
+        g.y +=
+            g.vy*dt;
+
+        g.timer -= dt;
+
+        if(g.y > 510){
+
+            g.y = 510;
+
+            g.vy *= -.35;
+
+            g.vx *= .7;
+        }
+
+        if(g.timer <= 0){
+
+            for(
+                const e of enemies
+            ){
+
+                if(!e.alive) continue;
+
+                const dx =
+                    e.x-g.x;
+
+                const dy =
+                    e.y-g.y;
+
+                const distance =
+                    Math.sqrt(
+                        dx*dx+dy*dy
+                    );
+
+                if(distance < 180){
+
+                    damageEnemy(
+                        e,
+                        enemies.indexOf(e),
+                        70
+                    );
+                }
+            }
+
+            grenades.splice(i,1);
+        }
+    }
+
+    /* ENEMIES */
+
+    for(
+        let i=0;
+        i<enemies.length;
+        i++
+    ){
+
+        const e =
+            enemies[i];
+
+        if(!e.alive) continue;
+
+        const dx =
+            player.x-e.x;
+
+        if(Math.abs(dx)>70){
+
+            e.vx =
+                dx>0
+                    ? 55
+                    : -55;
+
+            e.dir =
+                dx>0
+                    ? 1
+                    : -1;
+
+            e.x +=
+                e.vx*dt;
+        }
+
+        e.cooldown -= dt;
+
+        if(
+            Math.abs(dx)<500 &&
+            e.cooldown<=0
+        ){
+
+            damagePlayer(
+                4+stage
+            );
+
+            e.cooldown =
+                1.5 +
+                Math.random()*1.5;
+        }
+    }
+
+    /* CAMERA */
+
+    cameraX =
+        player.x -
+        W*.35;
+
+    cameraX =
+        Math.max(
+            0,
+            Math.min(
+                worldWidth-W,
+                cameraX
+            )
+        );
+
+    /* NETWORK */
+
+    netTimer += dt;
+
+    if(
+        online &&
+        roomCode &&
+        netTimer > .08
+    ){
+
+        netTimer = 0;
+
+        netState();
+    }
+
+    for(
+        const s of remoteShots
+    ){
+        s.ttl -= dt*1000;
+    }
+
+    remoteShots =
+        remoteShots.filter(
+            s => s.ttl > 0
+        );
+
+    updateHUD();
+
+    checkStageEnd();
 }
-let len=SD[stage-1].len;player.x=Math.max(25,Math.min(len,player.x));cam=Math.max(0,Math.min(player.x-380,len-W));
-if(keys[" "])shoot();
-for(const e of enemies)if(e.alive){let dist=player.x-e.x;e.anim+=dt/100;if(Math.abs(dist)<650){e.dir=dist>0?1:-1;if(Math.abs(dist)>150){
- const step=e.dir*(.28+stage*.045),test={x:e.x+step,y:e.y,w:e.w,h:e.h};
- if(!obstacles.some(o=>rectsOverlap(test,o)))e.x+=step;
+
+
+/* =========================================================
+   STAGE END
+========================================================= */
+
+function checkStageEnd(){
+
+    const alive =
+        enemies.filter(
+            e => e.alive
+        ).length;
+
+    if(alive === 0){
+
+        if(stage < 5){
+
+            if(isHost){
+
+                stage++;
+
+                sendNet({
+                    type:"stage",
+                    stage
+                });
+
+                startGame(stage);
+            }
+
+        }else{
+
+            gameRunning = false;
+
+            showMessage(
+                "MISSION COMPLETE",
+                5000
+            );
+        }
+    }
 }
-e.cool-=dt;if(e.cool<=0){e.cool=R(950,1700-stage*35);let w=e.type=="mg"?G.mg:G.rifle;shots.push({x:e.x+e.dir*20,y:e.y+23,vx:e.dir*w.speed*.68,vy:0,d:Math.max(3,w.d*.45+stage*.5),enemy:true})}}}
-for(const s of shots){
- s.x+=s.vx;s.y+=s.vy;s.travel=(s.travel||0)+Math.hypot(s.vx,s.vy);
- if(bulletBlocked(s)){fxadd(s.x,s.y,"#d7c39a",4);s.dead=true}
+
+
+/* =========================================================
+   NETWORK STATE
+========================================================= */
+
+function netState(){
+
+    if(
+        !online ||
+        !player ||
+        !roomCode
+    ){
+        return;
+    }
+
+    sendNet({
+
+        type:"state",
+
+        player:{
+            name:myName,
+
+            x:player.x,
+
+            y:player.y,
+
+            dir:player.dir,
+
+            hp:player.hp,
+
+            gun:player.gun,
+
+            stage,
+
+            alive:!gameOver
+        }
+
+    });
 }
-for(const s of shots)if(!s.dead&&s.enemy&&Math.abs(s.x-player.x)<28&&Math.abs(s.y-(player.y+25))<40){
- player.hp-=s.d;s.dead=true;fxadd(player.x,player.y,"#c63",5)
+
+
+function netShot(s){
+
+    if(!online) return;
+
+    sendNet({
+
+        type:"shot",
+
+        shot:{
+            x:s.x,
+            y:s.y,
+            vx:s.vx,
+            vy:s.vy,
+            d:s.damage
+        }
+
+    });
 }
-for(const s of shots)if(!s.dead&&!s.enemy)for(const e of enemies)if(e.alive&&Math.abs(s.x-e.x)<27&&Math.abs(s.y-(e.y+25))<38){
- hurt(e,s.d);s.dead=true;break
+
+
+/* =========================================================
+   DRAW BACKGROUND
+========================================================= */
+
+function drawBackground(){
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            H
+        );
+
+    gradient.addColorStop(
+        0,
+        "#252d25"
+    );
+
+    gradient.addColorStop(
+        .55,
+        "#66725d"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#27271e"
+    );
+
+    ctx.fillStyle =
+        gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+    /* clouds */
+
+    ctx.fillStyle =
+        "rgba(220,225,210,.10)";
+
+    for(
+        let i=0;
+        i<8;
+        i++
+    ){
+
+        const x =
+            ((i*420-cameraX*.12)
+            % (W+500))-250;
+
+        const y =
+            70+(i%3)*55;
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+            x,
+            y,
+            100,
+            25,
+            0,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+    /* distant trees */
+
+    for(
+        let x=-100;
+        x<worldWidth;
+        x+=170
+    ){
+
+        const sx =
+            x-cameraX*.35;
+
+        if(
+            sx < -100 ||
+            sx > W+100
+        ){
+            continue;
+        }
+
+        ctx.fillStyle =
+            "#273427";
+
+        ctx.fillRect(
+            sx,
+            390,
+            12,
+            170
+        );
+
+        ctx.beginPath();
+
+        ctx.arc(
+            sx+6,
+            370,
+            45,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+    /* ground */
+
+    ctx.fillStyle =
+        "#51442f";
+
+    ctx.fillRect(
+        0,
+        560,
+        W,
+        H-560
+    );
+
+    ctx.fillStyle =
+        "#66543a";
+
+    for(
+        let x=0;
+        x<W;
+        x+=45
+    ){
+
+        ctx.fillRect(
+            x,
+            570+(x%3)*8,
+            22,
+            3
+        );
+    }
 }
-shots=shots.filter(s=>!s.dead&&(s.travel||0)<520&&s.x>-200&&s.x<len+200);
-for(const s of remoteShots){s.x+=s.vx;s.y+=s.vy;s.ttl-=dt}remoteShots=remoteShots.filter(s=>s.ttl>0);
-for(const g of grenades){
- const nx=g.x+g.vx,ny=g.y+g.vy,hit=obstacles.some(o=>nx>=o.x-4&&nx<=o.x+o.w+4&&ny>=o.y-4&&ny<=o.y+o.h+4);
- if(hit){g.vx*=-.45;g.vy*=-.45}else{g.x=nx;g.vy+=.35;g.y+=g.vy}
- g.t-=dt;
- if(g.y>T(g.x)-8){g.y=T(g.x)-8;g.vy*=-.45;g.vx*=.72}
+
+
+/* =========================================================
+   DRAW WORLD
+========================================================= */
+
+function drawWorld(){
+
+    for(const s of solids){
+
+        const x =
+            s.x-cameraX;
+
+        if(
+            x+s.w<0 ||
+            x>W
+        ){
+            continue;
+        }
+
+        ctx.fillStyle =
+            "#3b3427";
+
+        ctx.fillRect(
+            x,
+            s.y,
+            s.w,
+            s.h
+        );
+
+        ctx.strokeStyle =
+            "#756044";
+
+        ctx.strokeRect(
+            x,
+            s.y,
+            s.w,
+            s.h
+        );
+
+        /* boxes */
+
+        if(
+            s.w < 200 &&
+            s.h < 150
+        ){
+
+            ctx.fillStyle =
+                "#625036";
+
+            ctx.fillRect(
+                x+5,
+                s.y+5,
+                s.w-10,
+                20
+            );
+
+            ctx.strokeStyle =
+                "#947953";
+
+            ctx.strokeRect(
+                x+5,
+                s.y+5,
+                s.w-10,
+                20
+            );
+        }
+    }
 }
-for(const g of grenades)if(g.t<=0){for(const e of enemies)if(e.alive&&Math.abs(e.x-g.x)<145)hurt(e,80);fxadd(g.x,g.y,"#e8a33a",18);g.t=-999}
-grenades=grenades.filter(g=>g.t>-900);for(const f of fx){f.x+=f.vx;f.y+=f.vy;f.vy+=.06;f.t-=dt}
-for(const s of smoke){s.t+=dt;if(s.t>2600){s.t=0;s.y=T(s.x)-70;s.r=R(14,28)}}fx=fx.filter(f=>f.t>0);if(msgT>0)msgT-=dt;
-if(player.hp<=0){screen="dead";return}if(enemies.every(e=>!e.alive)&&player.x>=len-500)screen="win"}
-function sky(){
-  box(0,0,W,H,SD[stage-1].sky);
-  /* clouds */
-  for(let i=0;i<11;i++){
-    let a=i*170-(cam*.08%170),b=70+(i%4)*38;
-    box(a,b,100,13,"#d5d8d1");box(a+22,b-9,58,22,"#d5d8d1");
-  }
-  /* distant smoke columns */
-  ctx.globalAlpha=.18;
-  for(let i=0;i<7;i++){
-    let a=i*270-(cam*.16%270);
-    box(a,205-(i%3)*30,18,155,"#4e5651");
-    box(a-12,185-(i%3)*30,42,25,"#59605a");
-  }
-  ctx.globalAlpha=1;
+
+
+/* =========================================================
+   DRAW PLAYER
+========================================================= */
+
+function drawCharacter(
+    p,
+    x,
+    y,
+    color="#667b4e",
+    name=""
+){
+
+    ctx.save();
+
+    ctx.translate(
+        x+p.w/2,
+        y
+    );
+
+    if(p.dir < 0){
+        ctx.scale(-1,1);
+    }
+
+    /* legs */
+
+    ctx.fillStyle =
+        "#20231c";
+
+    ctx.fillRect(
+        -16,
+        42,
+        12,
+        30
+    );
+
+    ctx.fillRect(
+        5,
+        42,
+        12,
+        30
+    );
+
+    /* body */
+
+    ctx.fillStyle =
+        color;
+
+    ctx.fillRect(
+        -20,
+        17,
+        40,
+        34
+    );
+
+    /* backpack */
+
+    ctx.fillStyle =
+        "#343c2a";
+
+    ctx.fillRect(
+        -25,
+        20,
+        8,
+        28
+    );
+
+    /* head */
+
+    ctx.fillStyle =
+        "#c89b73";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        9,
+        15,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* helmet */
+
+    ctx.fillStyle =
+        "#303a27";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        5,
+        17,
+        Math.PI,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* rifle */
+
+    ctx.strokeStyle =
+        "#171914";
+
+    ctx.lineWidth = 7;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        5,
+        28
+    );
+
+    ctx.lineTo(
+        42,
+        24
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+
+    if(name){
+
+        ctx.save();
+
+        ctx.font =
+            "bold 13px Tahoma";
+
+        ctx.textAlign =
+            "center";
+
+        ctx.fillStyle =
+            "#fff";
+
+        ctx.shadowColor =
+            "#000";
+
+        ctx.shadowBlur = 4;
+
+        ctx.fillText(
+            name,
+            x+p.w/2,
+            y-12
+        );
+
+        ctx.restore();
+    }
 }
-function decor(){for(let i=0;i<45;i++){let w=i*280+120,a=w-cam;if(a<-100||a>W+100)continue;let gy=T(w);box(a,gy-90,10,90,"#493d2f");box(a-18,gy-68,46,8,"#59472e");if(i%3==0){box(a+25,gy-35,35,35,"#4d5147")}}}
-function ground(){box(0,566,W,154,"#715d40");for(let a=0;a<W;a+=9){let gy=T(a+cam);box(a,gy-4,3,6,"#334b31")}}
-function soldier(px,py,dir,enemy,elite,an){ctx.save();ctx.translate(px,py);ctx.scale(dir,1);let l=(Math.sin(an)*2)|0;box(-21,59,44,5,"#3b3229");box(-15,52+l,13,9,"#25231e");box(6,52-l,13,9,"#25231e");box(-14,34,13,21,"#3d5140");box(4,34,13,21,"#465943");box(-16,10,32,29,elite?"#35463e":enemy?"#555448":"#465b47");box(-21,17,6,19,"#394437");box(10,16,8,22,"#9a715b");box(14,27,22,6,"#394338");box(-10,-9,20,21,enemy?"#9d725b":"#b27f61");box(-15,-14,30,7,elite?"#2d3835":enemy?"#4b4e46":"#43523f");box(-8,-20,18,7,elite?"#34433e":"#4e5b46");box(4,-2,3,3,"#28211d");box(8,5,5,2,"#34241e");/* تفنگ پیکسلی با فرم مشخص‌تر */
-let gunColor=enemy?"#252621":"#222522";
-let wood=enemy?"#5b4936":"#76543a";
-if(player && !enemy && player.gun==="shotgun"){
-  box(18,25,38,6,gunColor);box(52,24,13,7,gunColor);box(20,31,19,4,wood);box(15,29,8,8,wood);
-}else if(player && !enemy && player.gun==="rifle"){
-  box(17,24,44,5,gunColor);box(57,23,13,6,gunColor);box(18,29,23,5,wood);box(14,28,8,7,wood);box(42,23,7,5,"#4b4d47");
-}else if(player && !enemy && player.gun==="mg"){
-  box(17,23,48,7,gunColor);box(61,22,13,8,gunColor);box(19,30,21,5,wood);box(42,30,8,12,gunColor);box(27,35,6,10,gunColor);
-}else if(player && !enemy && player.gun==="smg"){
-  box(18,25,34,7,gunColor);box(49,24,14,8,gunColor);box(19,32,15,7,wood);box(30,34,6,12,gunColor);box(44,29,8,4,"#4c4f49");
-}else{
-  box(19,27,37,5,gunColor);box(51,26,11,7,gunColor);box(22,32,17,5,wood);
+
+
+/* =========================================================
+   DRAW ENEMY
+========================================================= */
+
+function drawEnemy(e){
+
+    if(!e.alive) return;
+
+    const x =
+        e.x-cameraX;
+
+    if(
+        x+e.w<0 ||
+        x>W
+    ){
+        return;
+    }
+
+    ctx.save();
+
+    ctx.translate(
+        x+e.w/2,
+        e.y
+    );
+
+    if(e.dir<0){
+        ctx.scale(-1,1);
+    }
+
+    /* legs */
+
+    ctx.fillStyle =
+        "#22251e";
+
+    ctx.fillRect(
+        -15,
+        43,
+        11,
+        29
+    );
+
+    ctx.fillRect(
+        4,
+        43,
+        11,
+        29
+    );
+
+    /* body */
+
+    ctx.fillStyle =
+        e.type===0
+            ? "#4a5140"
+            : "#3c4337";
+
+    ctx.fillRect(
+        -19,
+        17,
+        38,
+        34
+    );
+
+    /* head */
+
+    ctx.fillStyle =
+        "#a77d5d";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        9,
+        15,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* helmet */
+
+    ctx.fillStyle =
+        "#292d25";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        5,
+        17,
+        Math.PI,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    /* weapon */
+
+    ctx.strokeStyle =
+        "#11130f";
+
+    ctx.lineWidth = 6;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        5,
+        28
+    );
+
+    ctx.lineTo(
+        42,
+        28
+    );
+
+    ctx.stroke();
+
+    ctx.restore();
+
+    /* HP */
+
+    const hp =
+        Math.max(
+            0,
+            e.hp/e.maxHp
+        );
+
+    ctx.fillStyle =
+        "#211814";
+
+    ctx.fillRect(
+        x,
+        e.y-10,
+        e.w,
+        5
+    );
+
+    ctx.fillStyle =
+        "#ad704d";
+
+    ctx.fillRect(
+        x,
+        e.y-10,
+        e.w*hp,
+        5
+    );
 }
-ctx.restore()}
-function drawObstacles(){
-for(const o of obstacles){
- const a=o.x-cam;if(a+o.w<-20||a>W+20)continue;
- if(o.type===0){box(a,o.y,o.w,o.h,"#5b5140");box(a+5,o.y+5,o.w-10,7,"#75684e");box(a+12,o.y+18,o.w-24,7,"#473f33")}
- else if(o.type===1){box(a,o.y,o.w,o.h,"#8b7450");box(a+8,o.y+7,o.w-16,7,"#b39463");box(a+8,o.y+22,o.w-16,7,"#69563e")}
- else if(o.type===2){box(a,o.y,o.w,o.h,"#4e514a");box(a+6,o.y+5,o.w-12,9,"#676960");box(a+14,o.y+22,18,7,"#3d403b")}
- else{box(a,o.y,o.w,o.h,"#554b3d");for(let k=0;k<4;k++){box(a+8+k*27,o.y+8,22,17,"#817052");box(a+2+k*29,o.y+27,25,17,"#6d5b43")}}
-}}
-function drawMedkits(){
-for(const m of medkits){
- if(m.used)continue;
- const a=m.x-cam,g=T(m.x);
- box(a-23,g-29,46,29,"#33352f");
- box(a-20,g-27,40,25,"#d7d7c8");
- box(a-6,g-23,12,17,"#a83232");
- box(a-11,g-18,22,7,"#a83232");
- text("E",a,g-37,12,"#fff");
-}}
-function drawBattlefield(){
-  /* distant ruined city */
-  for(const b of battlefield){
-    const x=b.x-cam*.55;
-    if(x<-180||x>W+180)continue;
-    const base=455;
-    if(b.type===0){
-      box(x,base-95,75,95,"#4a4841");box(x+8,base-110,56,18,"#5b574c");
-      box(x+18,base-78,14,20,"#252725");box(x+45,base-58,13,24,"#282a27");
-      box(x-8,base-8,95,9,"#393a35");
-    }else if(b.type===1){
-      box(x,base-70,95,70,"#55534a");box(x+10,base-92,74,22,"#686359");
-      box(x+15,base-51,22,24,"#242522");box(x+57,base-51,22,24,"#292a27");
-    }else if(b.type===2){
-      box(x+35,base-125,13,125,"#4d5148");box(x+17,base-106,50,10,"#3e413a");
-      box(x+24,base-87,36,8,"#55584f");box(x+38,base-142,8,17,"#393b35");
-    }else if(b.type===3){
-      box(x,base-45,115,45,"#5c5040");box(x+10,base-56,90,12,"#766248");
-      for(let q=0;q<4;q++)box(x+16+q*22,base-38,13,7,"#382f27");
-    }else if(b.type===4){
-      box(x,base-9,105,6,"#302d27");box(x+12,base-35,4,35,"#36342f");box(x+75,base-35,4,35,"#36342f");
-      for(let q=0;q<5;q++)box(x+15+q*16,base-28,2,2,"#8c8877");
-    }else if(b.type===5){
-      box(x+30,base-110,10,110,"#4a4135");box(x+3,base-82,65,7,"#5b4a36");
-      box(x+16,base-61,48,7,"#594835");box(x+43,base-125,5,18,"#3b352d");
+
+
+/* =========================================================
+   DRAW BULLETS
+========================================================= */
+
+function drawBullets(){
+
+    ctx.fillStyle =
+        "#f4dc8b";
+
+    for(const b of bullets){
+
+        const x =
+            b.x-cameraX;
+
+        if(
+            x<0 ||
+            x>W
+        ){
+            continue;
+        }
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            b.y,
+            b.r,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+
+    ctx.fillStyle =
+        "#d7b879";
+
+    for(const b of remoteShots){
+
+        const x =
+            b.x-cameraX;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            b.y,
+            4,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+}
+
+
+/* =========================================================
+   DRAW GRENADES
+========================================================= */
+
+function drawGrenades(){
+
+    for(const g of grenades){
+
+        const x =
+            g.x-cameraX;
+
+        ctx.fillStyle =
+            "#1d231a";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            x,
+            g.y,
+            8,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+}
+
+
+/* =========================================================
+   DRAW REMOTE PLAYERS
+========================================================= */
+
+function drawRemotePlayers(){
+
+    for(const id in remotePlayers){
+
+        if(id === myId) continue;
+
+        const p =
+            remotePlayers[id];
+
+        if(!p) continue;
+
+        if(
+            Number(p.stage) !== stage
+        ){
+            continue;
+        }
+
+        const rp = {
+
+            x:Number(p.x)||0,
+
+            y:Number(p.y)||0,
+
+            w:42,
+
+            h:72,
+
+            dir:p.dir < 0 ? -1 : 1
+        };
+
+        drawCharacter(
+            rp,
+            rp.x-cameraX,
+            rp.y,
+            "#4e7180",
+            p.name || "Player"
+        );
+    }
+}
+
+
+/* =========================================================
+   DRAW GAME
+========================================================= */
+
+function drawGame(){
+
+    drawBackground();
+
+    drawWorld();
+
+    for(
+        const e of enemies
+    ){
+        drawEnemy(e);
+    }
+
+    drawGrenades();
+
+    drawBullets();
+
+    drawRemotePlayers();
+
+    drawCharacter(
+        player,
+        player.x-cameraX,
+        player.y,
+        "#718b55",
+        myName
+    );
+}
+
+
+/* =========================================================
+   HUD
+========================================================= */
+
+function updateHUD(){
+
+    document.getElementById(
+        "hpText"
+    ).textContent =
+        Math.round(player.hp);
+
+    document.getElementById(
+        "hpFill"
+    ).style.width =
+        player.hp+"%";
+
+    document.getElementById(
+        "stageText"
+    ).textContent =
+        stage;
+
+    document.getElementById(
+        "weaponText"
+    ).textContent =
+        player.reload
+            ? "Reloading..."
+            : player.gun +
+              " " +
+              player.ammo +
+              "/" +
+              player.maxAmmo;
+
+    document.getElementById(
+        "enemyText"
+    ).textContent =
+        enemies.filter(
+            e=>e.alive
+        ).length;
+}
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+function showMessage(
+    text,
+    duration=1500
+){
+
+    const el =
+        document.getElementById(
+            "gameMessage"
+        );
+
+    el.textContent =
+        text;
+
+    el.style.opacity = "1";
+
+    clearTimeout(
+        messageTimer
+    );
+
+    messageTimer =
+        setTimeout(
+            ()=>{
+                el.style.opacity="0";
+            },
+            duration
+        );
+}
+
+
+/* =========================================================
+   MENU
+========================================================= */
+
+const gameMenu =
+    document.getElementById(
+        "gameMenu"
+    );
+
+document.getElementById(
+    "resumeBtn"
+).onclick = () => {
+
+    gameMenu.style.display =
+        "none";
+};
+
+document.getElementById(
+    "lobbyBtn"
+).onclick = () => {
+
+    gameMenu.style.display =
+        "none";
+
+    if(
+        online &&
+        roomCode
+    ){
+
+        sendNet({
+            type:"return_lobby"
+        });
+
+        onlinePanel.style.display =
+            "flex";
+
+        showLobby(
+            roomCode,
+            isHost
+        );
+
+    }
+};
+
+function toggleMenu(){
+
+    if(
+        !gameRunning ||
+        gameOver
+    ){
+        return;
+    }
+
+    if(
+        gameMenu.style.display ===
+        "flex"
+    ){
+
+        gameMenu.style.display =
+            "none";
+
     }else{
-      /* wrecked vehicle silhouette */
-      box(x,base-27,120,27,"#303733");box(x+18,base-43,72,17,"#3a403b");
-      box(x+8,base-3,24,18,"#222624");box(x+87,base-3,24,18,"#222624");
-      box(x+44,base-55,36,14,"#3d433e");box(x+58,base-72,10,18,"#262a27");
+
+        gameMenu.style.display =
+            "flex";
     }
-  }
-  /* shell craters */
-  for(let i=0;i<14;i++){
-    let x=i*430+180-cam;
-    box(x,559,45,7,"#463b2e");box(x+7,556,31,3,"#332d26");
-  }
-  /* barbed wire */
-  for(let i=0;i<7;i++){
-    let x=300+i*210-cam;
-    box(x,520,4,50,"#514b40");box(x+58,520,4,50,"#514b40");
-    box(x+2,527,60,2,"#8a8170");box(x+2,545,60,2,"#777061");
-    for(let q=0;q<4;q++){box(x+12+q*15,523,4,4,"#b0a48c");box(x+24+q*15,542,4,4,"#a99d87")}
-  }
 }
-function drawSmoke(){
-  ctx.globalAlpha=.20;
-  for(const s of smoke){
-    const x=s.x-cam*.82,y=s.y;
-    for(let i=0;i<4;i++){
-      const r=s.r+i*7;
-      ctx.beginPath();ctx.arc(x+(i%2)*8,y-i*13,r,0,Math.PI*2);ctx.fillStyle="#d7d1c1";ctx.fill();
+
+
+/* =========================================================
+   MAIN LOOP
+========================================================= */
+
+function loop(time){
+
+    if(!lastTime){
+        lastTime = time;
     }
-  }
-  ctx.globalAlpha=1;
+
+    let dt =
+        (time-lastTime)/1000;
+
+    lastTime = time;
+
+    dt =
+        Math.min(
+            dt,
+            .033
+        );
+
+    update(dt);
+
+    if(gameRunning){
+        drawGame();
+    }else{
+        drawBackground();
+    }
+
+    requestAnimationFrame(loop);
 }
-function drawAirBattle(){
-  const planeX=1050-(cam*.32%1500);
-  box(planeX,145,70,6,"#303b3b");box(planeX+18,137,28,7,"#3d4745");box(planeX+8,151,18,4,"#242b2b");
-  box(planeX+68,148,18,3,"#252b2b");
-}
 
-function drawGame(){sky();drawAirBattle();drawSmoke();decor();drawBattlefield();ground();drawObstacles();drawMedkits();for(const d of drops){let a=d.x-cam,gy=T(d.x);box(a-14,gy-17,28,13,"#5a4731");box(a-8,gy-14,16,5,"#1d1d1a");text("E",a,gy-22,12)}for(const e of enemies)if(e.alive){soldier(e.x-cam,e.y,e.dir,true,e.type=="elite",e.anim);let a=e.x-cam;box(a-21,e.y-25,42,5,"#271f1c");box(a-21,e.y-25,42*Math.max(0,e.hp/e.max),"#b43a35")}for(const s of shots)box(s.x-cam,s.y,10,3,s.enemy?"#ffb34e":"#ffe7a0");for(const g of grenades)box(g.x-cam-5,g.y-5,10,10,"#30412f");for(const f of fx)box(f.x-cam,f.y,4,4,f.col);
-for(const s of remoteShots){box(s.x-cam,s.y,10,3,"#9fd6ff")}
-for(const p of Object.values(remotePlayers)){
- if(p.stage!==stage)continue;
- soldier(p.x-cam,p.y,p.dir,false,false,0);
- text(p.name,p.x-cam,p.y-30,13,"#ffe9a8");
-}
-soldier(player.x-cam,player.y,player.dir,false,false,player.anim);text(myName,player.x-cam,player.y-30,13,"#9fe6ff");hud()}
-function hud(){box(16,16,330,96,"#151515cc");text("HP",31,44,16,"#fff","left");box(68,31,220,17,"#422");box(68,31,220*Math.max(0,player.hp/player.max),17,"#b83b35");text(Math.ceil(Math.max(0,player.hp))+"/"+player.max,178,44,13);text(G[player.gun].name,31,78,15,"#ddd","left");text(player.ammo+"/"+G[player.gun].mag,305,78,18,"#fff","right");text("نارنجک: "+player.grenades,305,101,14,"#ddd","right");text("مرحله "+stage+" — "+SD[stage-1].name,W/2,34,20);text("دشمن: "+enemies.filter(e=>e.alive).length,W/2,62,15);text("کشتار: "+player.kills,W/2,88,14,"#ddd");text("E = جعبه پزشکی / سلاح",W-25,128,13,"#eee","right");if(player.reload>0)text("در حال تعویض خشاب...",W/2,H-48,20,"#ffd27a");if(msgT>0)text(msg,W/2,H-82,18,"#ffe9a8")}
-function menu(){buttons=[];box(0,0,W,H,"#171a17");for(let i=0;i<12;i++){ctx.globalAlpha=.1;box(i*140,0,55,H,"#c0a77a")}ctx.globalAlpha=1;text("WWII",W/2,130,78,"#d7c49a");text("PIXEL ASSAULT",W/2,192,42);text("نبرد پیکسلی — سبک Run & Gun",W/2,230,20,"#aaa");button(390,285,500,72,"۱ — مراحل بازی","stages");button(390,380,500,72,"۲ — اسلحه‌ها و شخصیت‌ها","arsenal");text("W/A/S/D یا کلیدهای جهت‌دار • Space شلیک • R خشاب • E تعامل • Q نارنجک • P توقف",W/2,535,15,"#aaa")}
-function stages(){buttons=[];box(0,0,W,H,"#1b1d1a");text("انتخاب مرحله",W/2,82,38);for(let i=1;i<=5;i++){let col=(i-1)%3,row=Math.floor((i-1)/3),a=250+col*310,b=145+row*190;button(a,b,270,120,i+" — "+SD[i-1].name,"s"+i);text("سختی: "+"★".repeat(i),a+135,b+94,14,"#d9c58f")}button(490,560,300,60,"بازگشت","menu")}
-function arsenal(){buttons=[];box(0,0,W,H,"#1b1d1a");text("اسلحه‌ها و شخصیت‌ها",W/2,65,34);Object.keys(G).forEach((k,i)=>{
- let a=80+(i%3)*400,b=110+Math.floor(i/3)*170,g=G[k];
- box(a,b,350,130,"#292d28");
- text(g.name,a+175,b+28,21,"#f1dfb7");
- /* تصویر پیکسلی سلاح */
- let wx=a+210,wy=b+67;
- box(wx-70,wy,100,7,"#242724");
- box(wx+24,wy-2,22,10,"#171917");
- if(k==="pistol"){
-   box(wx-5,wy+7,18,28,"#4f3928");box(wx+6,wy+6,8,8,"#777");
- }else if(k==="rifle"){
-   box(wx-62,wy+8,48,6,"#76533a");box(wx-15,wy-3,55,7,"#292b29");box(wx+37,wy-4,15,8,"#171817");
- }else if(k==="smg"){
-   box(wx-42,wy+8,30,8,"#76533a");box(wx-8,wy+6,8,28,"#272927");box(wx+8,wy-3,32,7,"#222522");
- }else if(k==="mg"){
-   box(wx-40,wy+9,27,7,"#76533a");box(wx-5,wy-5,62,9,"#202320");box(wx+43,wy+4,9,26,"#363a35");
- }else{
-   box(wx-38,wy+8,25,7,"#76533a");box(wx-8,wy-4,54,10,"#252725");box(wx+36,wy+6,13,20,"#444740");
- }
- text("آسیب: "+g.d,a+22,b+65,14,"#ddd","left");
- text("خشاب: "+g.mag,a+22,b+89,14,"#ddd","left");
- text("سرعت: "+Math.round(60000/g.rate)+"/دقیقه",a+22,b+113,13,"#bbb","left");
-});box(830,450,330,110,"#292d28");text("شخصیت اصلی",995,487,20,"#f1dfb7");text("سرباز آمریکایی — تفنگدار",995,518,15,"#ddd");text("لباس میدانی + کلاه فولادی",995,544,13,"#aaa");button(490,610,300,55,"بازگشت","menu")}
-function overlay(title,sub,arr){ctx.globalAlpha=.84;box(0,0,W,H,"#000");ctx.globalAlpha=1;text(title,W/2,230,52,"#f0dfbd");text(sub,W/2,290,21,"#ddd");let y=345;for(const a of arr){button(455,y,370,62,a.label,a.id);y+=78}}
-function draw(){if(screen=="menu")menu();else if(screen=="stages")stages();else if(screen=="arsenal")arsenal();else if(screen=="game"){buttons=[];drawGame()}else if(screen=="pause"){buttons=[];drawGame();overlay("توقف","برای ادامه کلید P را بزنید",[{label:"ادامه",id:"resume"},{label:"بازگشت به منو",id:"menu"}])}else if(screen=="dead"){buttons=[];drawGame();overlay("شکست خوردید","دوباره تلاش کنید",[{label:"دوباره تلاش کن",id:"restart"},{label:"بازگشت به منو",id:"menu"}])}else{buttons=[];drawGame();if(stage<5)overlay("مرحله کامل شد","مرحله بعد آماده است",[{label:"مرحله "+(stage+1),id:"next"},{label:"بازگشت به منو",id:"menu"}]);else overlay("کمپین کامل شد","هر ۵ مرحله تمام شد",[{label:"بازگشت به منو",id:"menu"}])}}
-function loop(t){let dt=Math.min(40,t-last);last=t;update(dt);if(screen==="game"&&online){netTimer+=dt;if(netTimer>80){netTimer=0;netState()}}draw();requestAnimationFrame(loop)}requestAnimationFrame(loop);
-function activate(id){if(id=="stages")screen="stages";else if(id=="arsenal")screen="arsenal";else if(id=="menu")screen="menu";else if(id=="resume")screen="game";else if(id[0]=="s"){let n=+id.slice(1);startGame(n);if(online)sendNet({type:"stage",stage:n})}else if(id=="restart")startGame(stage);else if(id=="next")startGame(stage+1)}
 
-/* ===== حالت آنلاین ۴ نفره + اتاق ۶ رقمی ===== */
-const SERVER_URL=(location.protocol==="file:")?"":((location.protocol==="https:")?"wss://":"ws://")+location.host;
-const onlinePanel=document.getElementById("onlinePanel"),nameInput=document.getElementById("nameInput"),joinBtn=document.getElementById("joinBtn"),onlineStatus=document.getElementById("onlineStatus"),onlineInfo=document.getElementById("onlineInfo");
-const nameStep=document.getElementById("nameStep"),roomStep=document.getElementById("roomStep"),lobbyStep=document.getElementById("lobbyStep"),roomWelcome=document.getElementById("roomWelcome"),createRoomBtn=document.getElementById("createRoomBtn"),roomInput=document.getElementById("roomInput"),joinRoomBtn=document.getElementById("joinRoomBtn"),roomCodeEl=document.getElementById("roomCode"),roomPlayersEl=document.getElementById("roomPlayers"),hostHint=document.getElementById("hostHint"),leaveRoomBtn=document.getElementById("leaveRoomBtn");
-let myName="",myId="",online=false,ws=null,remotePlayers={},remoteShots=[],roomCount=0,serverReady=false,netTimer=0,roomCode="",isHost=false;
-function setOnlineStatus(t){onlineStatus.textContent=t}
-function updateOnlineInfo(){if(!online||!roomCode){onlineInfo.style.display="none";return}onlineInfo.style.display="block";const names=Object.values(remotePlayers).map(p=>p.name);if(myName&&!names.includes(myName))names.unshift(myName);onlineInfo.textContent="اتاق "+roomCode+" • "+names.length+"/4 — "+names.join(" • ")}
-function updateLobby(players){const arr=Object.values(players||{});roomPlayersEl.innerHTML=arr.map(p=>"👤 "+p.name+(p.id===myId?" (شما)":"")+(p.host?" ⭐ میزبان":"")).join("<br>");hostHint.textContent=isHost?"شما میزبان هستید. از منوی مراحل، مرحله را انتخاب کنید تا بازی شروع شود.":"منتظر انتخاب مرحله توسط میزبان باشید.";updateOnlineInfo()}
-function sendNet(o){if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify(o))}
-function showRoomStep(){nameStep.style.display="none";roomStep.style.display="block";lobbyStep.style.display="none";roomWelcome.textContent="سلام "+myName+"! یک اتاق بساز یا با رمز ۶ رقمی وارد شو.";setOnlineStatus("")}
-function showLobby(code,host){roomCode=code;isHost=!!host;roomStep.style.display="none";lobbyStep.style.display="block";roomCodeEl.textContent=code;setOnlineStatus("اتاق آماده است.")}
-function connectOnline(){myName=nameInput.value.trim();if(myName.length<2){setOnlineStatus("نام باید حداقل ۲ حرف باشد.");return}if(SERVER_URL===""){setOnlineStatus("این فایل باید از طریق سرور آنلاین اجرا شود، نه با دوبارکلیک.");return}setOnlineStatus("در حال اتصال...");joinBtn.disabled=true;ws=new WebSocket(SERVER_URL);ws.onopen=()=>sendNet({type:"hello",name:myName});ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch{return}
-if(m.type==="welcome"){myId=m.id;online=true;serverReady=true;showRoomStep()}
-else if(m.type==="room_created"){showLobby(m.code,true);remotePlayers=m.players||{};updateLobby(remotePlayers)}
-else if(m.type==="room_joined"){showLobby(m.code,!!m.host);remotePlayers=m.players||{};updateLobby(remotePlayers)}
-else if(m.type==="room"){roomCode=m.code;isHost=m.host===myId;remotePlayers=m.players||{};showLobby(m.code,isHost);updateLobby(remotePlayers)}
-else if(m.type==="error"){setOnlineStatus(m.message);joinBtn.disabled=false}
-else if(m.type==="state"){if(m.id!==myId)remotePlayers[m.id]=m.player}
-else if(m.type==="shot"&&m.id!==myId){remoteShots.push({...m.shot,ttl:650})}
-else if(m.type==="kill"&&enemies[m.index]){enemies[m.index].alive=false}
-else if(m.type==="stage"){if(screen!=="game"||stage!==m.stage)startGame(m.stage)}
-};ws.onclose=()=>{online=false;serverReady=false;roomCode="";setOnlineStatus("اتصال قطع شد. دوباره وارد شو.");joinBtn.disabled=false;onlinePanel.style.display="flex";nameStep.style.display="block";roomStep.style.display="none";lobbyStep.style.display="none";updateOnlineInfo()};ws.onerror=()=>setOnlineStatus("اتصال به سرور برقرار نشد.")}
-joinBtn.onclick=connectOnline;nameInput.addEventListener("keydown",e=>{if(e.key==="Enter")connectOnline()});
-createRoomBtn.onclick=()=>sendNet({type:"create_room"});joinRoomBtn.onclick=()=>{let code=roomInput.value.replace(/\D/g,"").slice(0,6);if(code.length!==6){setOnlineStatus("رمز اتاق باید دقیقاً ۶ رقم باشد.");return}sendNet({type:"join_room",code})};roomInput.addEventListener("keydown",e=>{if(e.key==="Enter")joinRoomBtn.click()});
-leaveRoomBtn.onclick=()=>{sendNet({type:"leave_room"});roomCode="";isHost=false;roomStep.style.display="block";lobbyStep.style.display="none";setOnlineStatus("از اتاق خارج شدی.");updateOnlineInfo()};
-function netState(){if(!online||!player||!roomCode)return;sendNet({type:"state",player:{name:myName,x:player.x,y:player.y,dir:player.dir,hp:player.hp,gun:player.gun,stage}})}
-function netShot(s){if(online)sendNet({type:"shot",shot:{x:s.x,y:s.y,vx:s.vx,vy:s.vy,d:s.d,enemy:false,ttl:650}})}
+/* =========================================================
+   INITIAL SCREEN
+========================================================= */
 
-/* ===== کنترل کامل کیبورد کامپیوتر =====
-   از e.code استفاده می‌کنیم تا حتی با کیبورد فارسی هم
-   کلید فیزیکی W/A/S/D درست کار کند. */
-window.addEventListener("keydown", e => {
-  const code = e.code;
+onlinePanel.style.display =
+    "flex";
 
-  const map = {
-    KeyW: "w",
-    KeyA: "a",
-    KeyS: "s",
-    KeyD: "d",
-    ArrowUp: "w",
-    ArrowDown: "s",
-    ArrowLeft: "a",
-    ArrowRight: "d",
-    Space: " ",
-    KeyR: "r",
-    KeyE: "e",
-    KeyQ: "q",
-    KeyP: "p",
-    Escape: "escape"
-  };
+showNameStep();
 
-  const gameKey = map[code];
-  if (!gameKey) return;
+requestAnimationFrame(loop);
 
-  e.preventDefault();
-  keys[gameKey] = true;
-
-  /* کلیدهای تک‌فشاری فقط یک بار اجرا شوند */
-  if (e.repeat) return;
-
-  if (gameKey === "r") reload();
-
-  if (gameKey === "e") {
-    healPlayer();
-    pickup();
-  }
-
-  if (gameKey === "q") grenade();
-
-  if (gameKey === "p") {
-    if (screen === "game") screen = "pause";
-    else if (screen === "pause") screen = "game";
-  }
-
-  if (gameKey === "escape") screen = "menu";
-});
-
-window.addEventListener("keyup", e => {
-  const map = {
-    KeyW: "w",
-    KeyA: "a",
-    KeyS: "s",
-    KeyD: "d",
-    ArrowUp: "w",
-    ArrowDown: "s",
-    ArrowLeft: "a",
-    ArrowRight: "d",
-    Space: " ",
-    KeyR: "r",
-    KeyE: "e",
-    KeyQ: "q",
-    KeyP: "p"
-  };
-
-  const gameKey = map[e.code];
-  if (gameKey) {
-    e.preventDefault();
-    keys[gameKey] = false;
-  }
-});
-
-window.addEventListener("blur", () => {
-  Object.keys(keys).forEach(k => keys[k] = false);
-});
-c.addEventListener("click",e=>{let r=c.getBoundingClientRect(),px=(e.clientX-r.left)*W/r.width,py=(e.clientY-r.top)*H/r.height;for(let i=buttons.length-1;i>=0;i--){let b=buttons[i];if(px>=b.a&&px<=b.a+b.w&&py>=b.b&&py<=b.b+b.h){activate(b.id);return}}});
-hold=(id,k)=>{let e=document.getElementById(id);e.onpointerdown=q=>{q.preventDefault();keys[k]=true};e.onpointerup=e.onpointercancel=e.onpointerleave=()=>keys[k]=false};
-hold("L","a");hold("R","d");hold("J","w");hold("F"," ");hold("P","s");document.getElementById("P").onpointerdown=e=>{e.preventDefault();healPlayer();pickup()};
-document.getElementById("REL").onpointerdown=e=>{e.preventDefault();reload()};
-document.getElementById("G").onpointerdown=e=>{e.preventDefault();grenade()};
 </script>
-</body></html>
+
+</body>
+</html>
