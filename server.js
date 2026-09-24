@@ -25,4 +25,4 @@ else if(m.type==='kill')broadcastRoom(r,{type:'kill',id,index:+m.index||0,stage:
 else if(m.type==='stage'&&c.id===r.host){let st=Math.max(1,Math.min(5,+m.stage||1));for(const pid of r.players){const pc=clients.get(pid);if(pc&&pc.player)pc.player.stage=st}broadcastRoom(r,{type:'stage',stage:st})}
 });
 ws.on('close',()=>{leaveRoom(c);clients.delete(id)})});
-server.listen(PORT,()=>console.log('WWII Pixel Assault online room server: '+PORT));
+server.listen(PORT,'0.0.0.0',()=>console.log('WWII Pixel Assault online room server: '+PORT));
